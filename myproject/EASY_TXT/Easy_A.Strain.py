@@ -12,47 +12,75 @@ def min_search(v):
     return a
 
 def max_avg(l):
-    return sum(k) / 14
+    return sum(l) / 14
 
 def min_avg(l):
-   return sum(a) / 14
+   return sum(l) / 28
 
 xls_column_code = {
     'HEIGHT': 'C',
-    'EQ1.txt': 'D',
-    'EQ2.txt': 'E',
-    'EQ3.txt': 'F',
-    'EQ4.txt': 'G',
-    'EQ5.txt': 'H',
-    'EQ6.txt': 'I',
-    'EQ7.txt': 'J',
-    'EQ8.txt': 'K',
-    'EQ9.txt': 'L',
-    'EQ10.txt': 'M',
-    'EQ11.txt': 'N',
-    'EQ12.txt': 'O',
-    'EQ13.txt': 'P',
-    'EQ14.txt': 'Q',
-    'AVG1': 'R',
-    'EQ1.txt': 'S',
-    'EQ2.txt': 'T',
-    'EQ3.txt': 'U',
-    'EQ4.txt': 'V',
-    'EQ5.txt': 'W',
-    'EQ6.txt': 'X',
-    'EQ7.txt': 'Y',
-    'EQ8.txt': 'Z',
-    'EQ9.txt': 'AA',
-    'EQ10.txt': 'AB',
-    'EQ11.txt': 'AC',
-    'EQ12.txt': 'AD',
-    'EQ13.txt': 'AE',
-    'EQ14.txt': 'AF',
-    'AVG2': 'AG'
+    'EQ1.txt': {
+        'maximum' : 'D',
+        'minimum' : 'S'
+    },
+    'EQ2.txt': {
+        'maximum' : 'E',
+        'minimum' : 'T'
+    },
+    'EQ3.txt': {
+        'maximum' : 'F',
+        'minimum' : 'U'
+    },
+    'EQ4.txt': {
+        'maximum' : 'G',
+        'minimum' : 'V'
+    },
+    'EQ5.txt': {
+        'maximum' : 'H',
+        'minimum' : 'W'
+    },
+    'EQ6.txt': {
+        'maximum' : 'I',
+        'minimum' : 'X'
+    },
+    'EQ7.txt': {
+        'maximum' : 'J',
+        'minimum' : 'Y'
+    },
+    'EQ8.txt': {
+        'maximum' : 'K',
+        'minimum' : 'Z'
+    },
+    'EQ9.txt': {
+        'maximum' : 'L',
+        'minimum' : 'AA'
+    },
+    'EQ10.txt': {
+        'maximum' : 'M',
+        'minimum' : 'AB'
+    },
+    'EQ11.txt': {
+        'maximum' : 'N',
+        'minimum' : 'AC'
+    },
+    'EQ12.txt': {
+        'maximum' : 'O',
+        'minimum' : 'AD'
+    },
+    'EQ13.txt': {
+        'maximum' : 'P',
+        'minimum' : 'AE'
+    },
+    'EQ14.txt': {
+        'maximum' : 'Q',
+        'minimum' : 'AF'
+    },
+    'max_AVG': 'R',
+    'min_AVG': 'AG'
 }
 
 xls_input_file = './data/Axial Strain.xlsx'
-xls_output_file = 'Axial Strain_output.xlsx'
+xls_output_file = 'Axial Strain_Output.xlsx'
 xls_column_start_row = 3
 
 xls_workbook = openpyxl.load_workbook(filename=xls_input_file, read_only=False, data_only=False)
@@ -72,9 +100,9 @@ for root in root_list:
     file_list = []
     for d in data:
         file_list.append((int(d[2:-4]), d))
-
     file_list.sort()
     print(" ### > ", root)
+
     total_dict = {}
     for sorted_file in file_list:
         # dataname = EQ1. EQ2 ...
@@ -143,20 +171,27 @@ for root in root_list:
 #    print(zipped_list)
         process_list = []
         for (h, v) in height_group_dict.items():
-            process_list.append((h,  max_search(v), min_search(v)))
+            process_list.append((h, max_search(v), min_search(v)))
 
             max_search_value = max_search(v)
             if h in total_dict:
-                total_dict[h].append(max_search_value)
+                total_dict[h]['max'].append(max_search_value)
             else:
-                total_dict[h] = []
-                total_dict[h].append(max_search_value)
+                total_dict[h] = {
+                    'max': [],
+                    'min': [],
+                }
+                total_dict[h]['max'].append(max_search_value)
+
             min_search_value = min_search(v)
             if h in total_dict:
-                total_dict[h].append(min_search_value)
+                total_dict[h]['min'].append(min_search_value)
             else:
-                total_dict[h] = []
-            total_dict[h].append(min_search_value)
+                total_dict[h] = {
+                    'max': [],
+                    'min': [],
+                }
+            total_dict[h]['min'].append(min_search_value)
 
         process_list.sort(reverse=True)
         print(process_list)
@@ -166,13 +201,17 @@ for root in root_list:
         ## eq[x]
         start_row = xls_column_start_row
         for process in process_list:
-            cell = xls_column_code[dataname] + str(start_row)
-            xls_workbook[root][cell] = process[1]
+            m = process[1]
+            n = process[2]
+            max_cell = xls_column_code[dataname]['maximum'] + str(start_row)
+            min_cell = xls_column_code[dataname]['minimum'] + str(start_row)
+            xls_workbook[root][max_cell] = m
+            xls_workbook[root][min_cell] = n
             start_row = start_row + 1
 
     floor_average_list = []
     for (k, l) in total_dict.items():
-        floor_average_list.append((k, max_avg(l), min_avg(l)))
+        floor_average_list.append((k, max_avg(l['max']), min_avg(l['min'])))
     floor_average_list.sort(reverse=True)
 
     print(floor_average_list)
@@ -184,10 +223,10 @@ for root in root_list:
         height_cell = xls_column_code['HEIGHT'] + str(start_row)
         xls_workbook[root][height_cell] = h
         # write average
-        avg1_cell = xls_column_code['AVG1'] + str(start_row)
-        xls_workbook[root][avg1_cell] = floor[1]
-        avg2_cell = xls_column_code['AVG2'] + str(start_row)
-        xls_workbook[root][avg2_cell] = floor[2]
+        max_avg_cell = xls_column_code['max_AVG'] + str(start_row)
+        xls_workbook[root][max_avg_cell] = floor[1]
+        min_avg_cell = xls_column_code['min_AVG'] + str(start_row)
+        xls_workbook[root][min_avg_cell] = floor[2]
 
         start_row = start_row + 1
 
